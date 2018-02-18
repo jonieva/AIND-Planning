@@ -47,13 +47,6 @@ class AirCargoProblem(Problem):
         list<Action>
             list of Action objects
         """
-
-        # TODO create concrete Action objects based on the domain action schema for: Load, Unload, and Fly
-        # concrete actions definition: specific literal action that does not include variables as with the schema
-        # for example, the action schema 'Load(c, p, a)' can represent the concrete actions 'Load(C1, P1, SFO)'
-        # or 'Load(C2, P2, JFK)'.  The actions for the planning problem must be concrete because the problems in
-        # forward search and Planning Graphs must use Propositional Logic
-
         def load_actions():
             """Create all concrete Load actions and return a list
 
@@ -152,6 +145,8 @@ class AirCargoProblem(Problem):
                 possible_actions.append(action)
         return possible_actions
 
+
+
     def result(self, state: str, action: Action):
         """ Return the state that results from executing the given
         action in the given state. The action must be one of
@@ -214,10 +209,19 @@ class AirCargoProblem(Problem):
         conditions by ignoring the preconditions required for an action to be
         executed.
         """
-        # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
-        count = 0
-        return count
+        # Create the propositional logic object with the passed node state
+        kb = PropKB()
+        kb.tell(decode_state(node.state, self.state_map).pos_sentence())
 
+        # Get how many of the goals are already in the node state.
+        # If none, the heuristic is just the number of nodes.
+        # Otherwise we will need to subtract 1 for each present goal, as its cost is 0
+        count = 0
+        for clause in self.goal:
+            if clause not in kb.clauses:
+                # This goal is not already in the current node state
+                count += 1
+        return count
 
 def air_cargo_p1() -> AirCargoProblem:
     cargos = ['C1', 'C2']
